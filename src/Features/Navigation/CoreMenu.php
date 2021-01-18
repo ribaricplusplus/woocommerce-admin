@@ -7,6 +7,7 @@
 
 namespace Automattic\WooCommerce\Admin\Features\Navigation;
 
+use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\Admin\Features\Navigation\Menu;
 use Automattic\WooCommerce\Admin\Features\Navigation\Screen;
 
@@ -42,6 +43,11 @@ class CoreMenu {
 	 * Add registered admin settings as menu items.
 	 */
 	public static function get_setting_items() {
+		// Let the Settings feature add pages to the navigation if enabled.
+		if ( Loader::is_feature_enabled( 'settings' ) ) {
+			return array();
+		}
+
 		$setting_pages = \WC_Admin_Settings::get_settings_pages();
 		$settings      = array();
 		foreach ( $setting_pages as $setting_page ) {
