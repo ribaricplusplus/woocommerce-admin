@@ -48,6 +48,7 @@ class Settings {
 
 		// Run this after the original WooCommerce settings have been added.
 		add_action( 'admin_menu', array( $this, 'register_pages' ), 60 );
+		add_action( 'init', array( $this, 'redirect_core_settings_pages' ) );
 	}
 
 	/**
@@ -124,5 +125,27 @@ class Settings {
 				$item[2] = wc_admin_url( "&path={$page['path']}" );
 			}
 		}
+	}
+
+	/**
+	 * Redirect the old settings page URLs to the new ones.
+	 */
+	public function redirect_core_settings_pages() {
+		/* phpcs:disable WordPress.Security.NonceVerification */
+		if ( ! isset( $_GET['page'] ) || 'wc-settings' !== $_GET['page'] ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$setting_pages   = \WC_Admin_Settings::get_settings_pages();
+		$default_setting = isset( $setting_pages[0] ) ? $setting_pages[0]->get_id() : '';
+		$setting         = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : $default_setting;
+		/* phpcs:enable */
+
+		wp_safe_redirect( wc_admin_url( "&path=/settings/$setting" ) );
+		exit;
 	}
 }
